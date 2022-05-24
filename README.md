@@ -1,3 +1,2 @@
 # PokeDroid
-
-## PokéDex (Pokeagenda) feita em Kotlin alimentada pela PokeAPI.
+PokéDex (Pokeagenda) feita em Kotlin alimentada pela PokeAPI.
