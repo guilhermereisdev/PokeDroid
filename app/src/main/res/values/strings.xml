@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PokeDroid</string>
+    <string name="pokemon_avatar">Pokémon Avatar</string>
 </resources>
