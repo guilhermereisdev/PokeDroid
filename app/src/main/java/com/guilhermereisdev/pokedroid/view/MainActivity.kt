@@ -3,17 +3,25 @@ package com.guilhermereisdev.pokedroid.view
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.guilhermereisdev.pokedroid.R
 import com.guilhermereisdev.pokedroid.api.PokemonRepository
 import com.guilhermereisdev.pokedroid.domain.Pokemon
 import com.guilhermereisdev.pokedroid.domain.PokemonType
+import com.guilhermereisdev.pokedroid.viewmodel.PokemonViewModel
+import com.guilhermereisdev.pokedroid.viewmodel.PokemonViewModelFactory
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: RecyclerView
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, PokemonViewModelFactory())
+            .get(PokemonViewModel::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,40 +37,13 @@ class MainActivity : AppCompatActivity() {
 //        )
 //        val pokemons = listOf(charmander, charmander, charmander, charmander)
 
-        Thread(Runnable {
-            loadPokemons()
-        }).start()
+        viewModel.pokemons.observe(this) {
+            loadRecyclerView(it)
+        }
     }
 
-    private fun loadPokemons() {
-        val pokemonsApiResult = PokemonRepository.listPokemons()
-        pokemonsApiResult?.results?.let {
-            Log.d("POKEMON_API", it.toString())
-
-            val pokemons: List<Pokemon?> = it.map { pokemonResult ->
-                val number =
-                    pokemonResult.url
-                        .replace("https://pokeapi.co/api/v2/pokemon/", "")
-                        .replace("/", "")
-                        .toInt()
-
-                val pokemonApiResult = PokemonRepository.getPokemon(number)
-
-                pokemonApiResult?.let {
-                    Pokemon(
-                        pokemonApiResult.id,
-                        pokemonApiResult.name,
-                        pokemonApiResult.types.map { type -> type.type }
-                    )
-                }
-            }
-
-            val layoutManager = GridLayoutManager(this, 3)
-
-            recyclerView.post {
-                recyclerView.layoutManager = layoutManager
-                recyclerView.adapter = PokemonAdapter(pokemons)
-            }
-        }
+    private fun loadRecyclerView(pokemons: List<Pokemon?>) {
+        recyclerView.layoutManager = GridLayoutManager(this, 3)
+        recyclerView.adapter = PokemonAdapter(pokemons)
     }
 }
